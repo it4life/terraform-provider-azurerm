@@ -36,9 +36,80 @@ func NewDeploymentsClient(subscriptionID string) DeploymentsClient {
 	return NewDeploymentsClientWithBaseURI(DefaultBaseURI, subscriptionID)
 }
 
-// NewDeploymentsClientWithBaseURI creates an instance of the DeploymentsClient client.
+// NewDeploymentsClientWithBaseURI creates an instance of the DeploymentsClient client using a custom endpoint.  Use
+// this when interacting with an Azure cloud that uses a non-standard base URI (sovereign clouds, Azure stack).
 func NewDeploymentsClientWithBaseURI(baseURI string, subscriptionID string) DeploymentsClient {
 	return DeploymentsClient{NewWithBaseURI(baseURI, subscriptionID)}
+}
+
+// CalculateTemplateHash calculate the hash of the given template.
+// Parameters:
+// templateParameter - the template provided to calculate hash.
+func (client DeploymentsClient) CalculateTemplateHash(ctx context.Context, templateParameter interface{}) (result TemplateHashResult, err error) {
+	if tracing.IsEnabled() {
+		ctx = tracing.StartSpan(ctx, fqdn+"/DeploymentsClient.CalculateTemplateHash")
+		defer func() {
+			sc := -1
+			if result.Response.Response != nil {
+				sc = result.Response.Response.StatusCode
+			}
+			tracing.EndSpan(ctx, sc, err)
+		}()
+	}
+	req, err := client.CalculateTemplateHashPreparer(ctx, templateParameter)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CalculateTemplateHash", nil, "Failure preparing request")
+		return
+	}
+
+	resp, err := client.CalculateTemplateHashSender(req)
+	if err != nil {
+		result.Response = autorest.Response{Response: resp}
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CalculateTemplateHash", resp, "Failure sending request")
+		return
+	}
+
+	result, err = client.CalculateTemplateHashResponder(resp)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "CalculateTemplateHash", resp, "Failure responding to request")
+	}
+
+	return
+}
+
+// CalculateTemplateHashPreparer prepares the CalculateTemplateHash request.
+func (client DeploymentsClient) CalculateTemplateHashPreparer(ctx context.Context, templateParameter interface{}) (*http.Request, error) {
+	const APIVersion = "2018-05-01"
+	queryParameters := map[string]interface{}{
+		"api-version": APIVersion,
+	}
+
+	preparer := autorest.CreatePreparer(
+		autorest.AsContentType("application/json; charset=utf-8"),
+		autorest.AsPost(),
+		autorest.WithBaseURL(client.BaseURI),
+		autorest.WithPath("/providers/Microsoft.Resources/calculateTemplateHash"),
+		autorest.WithJSON(templateParameter),
+		autorest.WithQueryParameters(queryParameters))
+	return preparer.Prepare((&http.Request{}).WithContext(ctx))
+}
+
+// CalculateTemplateHashSender sends the CalculateTemplateHash request. The method will close the
+// http.Response Body if it receives an error.
+func (client DeploymentsClient) CalculateTemplateHashSender(req *http.Request) (*http.Response, error) {
+	return client.Send(req, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+}
+
+// CalculateTemplateHashResponder handles the response to the CalculateTemplateHash request. The method always
+// closes the http.Response Body.
+func (client DeploymentsClient) CalculateTemplateHashResponder(resp *http.Response) (result TemplateHashResult, err error) {
+	err = autorest.Respond(
+		resp,
+		azure.WithErrorUnlessStatusCode(http.StatusOK),
+		autorest.ByUnmarshallingJSON(&result),
+		autorest.ByClosing())
+	result.Response = autorest.Response{Response: resp}
+	return
 }
 
 // Cancel you can cancel a deployment only if the provisioningState is Accepted or Running. After the deployment is
@@ -115,8 +186,7 @@ func (client DeploymentsClient) CancelPreparer(ctx context.Context, resourceGrou
 // CancelSender sends the Cancel request. The method will close the
 // http.Response Body if it receives an error.
 func (client DeploymentsClient) CancelSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client, req,
-		azure.DoRetryWithRegistration(client.Client))
+	return client.Send(req, azure.DoRetryWithRegistration(client.Client))
 }
 
 // CancelResponder handles the response to the Cancel request. The method always
@@ -124,7 +194,6 @@ func (client DeploymentsClient) CancelSender(req *http.Request) (*http.Response,
 func (client DeploymentsClient) CancelResponder(resp *http.Response) (result autorest.Response, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusNoContent),
 		autorest.ByClosing())
 	result.Response = resp
@@ -199,8 +268,7 @@ func (client DeploymentsClient) CancelAtSubscriptionScopePreparer(ctx context.Co
 // CancelAtSubscriptionScopeSender sends the CancelAtSubscriptionScope request. The method will close the
 // http.Response Body if it receives an error.
 func (client DeploymentsClient) CancelAtSubscriptionScopeSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client, req,
-		azure.DoRetryWithRegistration(client.Client))
+	return client.Send(req, azure.DoRetryWithRegistration(client.Client))
 }
 
 // CancelAtSubscriptionScopeResponder handles the response to the CancelAtSubscriptionScope request. The method always
@@ -208,7 +276,6 @@ func (client DeploymentsClient) CancelAtSubscriptionScopeSender(req *http.Reques
 func (client DeploymentsClient) CancelAtSubscriptionScopeResponder(resp *http.Response) (result autorest.Response, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusNoContent),
 		autorest.ByClosing())
 	result.Response = resp
@@ -288,8 +355,7 @@ func (client DeploymentsClient) CheckExistencePreparer(ctx context.Context, reso
 // CheckExistenceSender sends the CheckExistence request. The method will close the
 // http.Response Body if it receives an error.
 func (client DeploymentsClient) CheckExistenceSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client, req,
-		azure.DoRetryWithRegistration(client.Client))
+	return client.Send(req, azure.DoRetryWithRegistration(client.Client))
 }
 
 // CheckExistenceResponder handles the response to the CheckExistence request. The method always
@@ -297,7 +363,6 @@ func (client DeploymentsClient) CheckExistenceSender(req *http.Request) (*http.R
 func (client DeploymentsClient) CheckExistenceResponder(resp *http.Response) (result autorest.Response, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusNoContent, http.StatusNotFound),
 		autorest.ByClosing())
 	result.Response = resp
@@ -370,8 +435,7 @@ func (client DeploymentsClient) CheckExistenceAtSubscriptionScopePreparer(ctx co
 // CheckExistenceAtSubscriptionScopeSender sends the CheckExistenceAtSubscriptionScope request. The method will close the
 // http.Response Body if it receives an error.
 func (client DeploymentsClient) CheckExistenceAtSubscriptionScopeSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client, req,
-		azure.DoRetryWithRegistration(client.Client))
+	return client.Send(req, azure.DoRetryWithRegistration(client.Client))
 }
 
 // CheckExistenceAtSubscriptionScopeResponder handles the response to the CheckExistenceAtSubscriptionScope request. The method always
@@ -379,7 +443,6 @@ func (client DeploymentsClient) CheckExistenceAtSubscriptionScopeSender(req *htt
 func (client DeploymentsClient) CheckExistenceAtSubscriptionScopeResponder(resp *http.Response) (result autorest.Response, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusNoContent, http.StatusNotFound),
 		autorest.ByClosing())
 	result.Response = resp
@@ -464,8 +527,7 @@ func (client DeploymentsClient) CreateOrUpdatePreparer(ctx context.Context, reso
 // http.Response Body if it receives an error.
 func (client DeploymentsClient) CreateOrUpdateSender(req *http.Request) (future DeploymentsCreateOrUpdateFuture, err error) {
 	var resp *http.Response
-	resp, err = autorest.SendWithSender(client, req,
-		azure.DoRetryWithRegistration(client.Client))
+	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return
 	}
@@ -478,7 +540,6 @@ func (client DeploymentsClient) CreateOrUpdateSender(req *http.Request) (future 
 func (client DeploymentsClient) CreateOrUpdateResponder(resp *http.Response) (result DeploymentExtended, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusCreated),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -558,8 +619,7 @@ func (client DeploymentsClient) CreateOrUpdateAtSubscriptionScopePreparer(ctx co
 // http.Response Body if it receives an error.
 func (client DeploymentsClient) CreateOrUpdateAtSubscriptionScopeSender(req *http.Request) (future DeploymentsCreateOrUpdateAtSubscriptionScopeFuture, err error) {
 	var resp *http.Response
-	resp, err = autorest.SendWithSender(client, req,
-		azure.DoRetryWithRegistration(client.Client))
+	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return
 	}
@@ -572,7 +632,6 @@ func (client DeploymentsClient) CreateOrUpdateAtSubscriptionScopeSender(req *htt
 func (client DeploymentsClient) CreateOrUpdateAtSubscriptionScopeResponder(resp *http.Response) (result DeploymentExtended, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusCreated),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -654,8 +713,7 @@ func (client DeploymentsClient) DeletePreparer(ctx context.Context, resourceGrou
 // http.Response Body if it receives an error.
 func (client DeploymentsClient) DeleteSender(req *http.Request) (future DeploymentsDeleteFuture, err error) {
 	var resp *http.Response
-	resp, err = autorest.SendWithSender(client, req,
-		azure.DoRetryWithRegistration(client.Client))
+	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return
 	}
@@ -668,7 +726,6 @@ func (client DeploymentsClient) DeleteSender(req *http.Request) (future Deployme
 func (client DeploymentsClient) DeleteResponder(resp *http.Response) (result autorest.Response, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted, http.StatusNoContent),
 		autorest.ByClosing())
 	result.Response = resp
@@ -741,8 +798,7 @@ func (client DeploymentsClient) DeleteAtSubscriptionScopePreparer(ctx context.Co
 // http.Response Body if it receives an error.
 func (client DeploymentsClient) DeleteAtSubscriptionScopeSender(req *http.Request) (future DeploymentsDeleteAtSubscriptionScopeFuture, err error) {
 	var resp *http.Response
-	resp, err = autorest.SendWithSender(client, req,
-		azure.DoRetryWithRegistration(client.Client))
+	resp, err = client.Send(req, azure.DoRetryWithRegistration(client.Client))
 	if err != nil {
 		return
 	}
@@ -755,7 +811,6 @@ func (client DeploymentsClient) DeleteAtSubscriptionScopeSender(req *http.Reques
 func (client DeploymentsClient) DeleteAtSubscriptionScopeResponder(resp *http.Response) (result autorest.Response, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted, http.StatusNoContent),
 		autorest.ByClosing())
 	result.Response = resp
@@ -834,8 +889,7 @@ func (client DeploymentsClient) ExportTemplatePreparer(ctx context.Context, reso
 // ExportTemplateSender sends the ExportTemplate request. The method will close the
 // http.Response Body if it receives an error.
 func (client DeploymentsClient) ExportTemplateSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client, req,
-		azure.DoRetryWithRegistration(client.Client))
+	return client.Send(req, azure.DoRetryWithRegistration(client.Client))
 }
 
 // ExportTemplateResponder handles the response to the ExportTemplate request. The method always
@@ -843,7 +897,6 @@ func (client DeploymentsClient) ExportTemplateSender(req *http.Request) (*http.R
 func (client DeploymentsClient) ExportTemplateResponder(resp *http.Response) (result DeploymentExportResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -917,8 +970,7 @@ func (client DeploymentsClient) ExportTemplateAtSubscriptionScopePreparer(ctx co
 // ExportTemplateAtSubscriptionScopeSender sends the ExportTemplateAtSubscriptionScope request. The method will close the
 // http.Response Body if it receives an error.
 func (client DeploymentsClient) ExportTemplateAtSubscriptionScopeSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client, req,
-		azure.DoRetryWithRegistration(client.Client))
+	return client.Send(req, azure.DoRetryWithRegistration(client.Client))
 }
 
 // ExportTemplateAtSubscriptionScopeResponder handles the response to the ExportTemplateAtSubscriptionScope request. The method always
@@ -926,7 +978,6 @@ func (client DeploymentsClient) ExportTemplateAtSubscriptionScopeSender(req *htt
 func (client DeploymentsClient) ExportTemplateAtSubscriptionScopeResponder(resp *http.Response) (result DeploymentExportResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -1006,8 +1057,7 @@ func (client DeploymentsClient) GetPreparer(ctx context.Context, resourceGroupNa
 // GetSender sends the Get request. The method will close the
 // http.Response Body if it receives an error.
 func (client DeploymentsClient) GetSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client, req,
-		azure.DoRetryWithRegistration(client.Client))
+	return client.Send(req, azure.DoRetryWithRegistration(client.Client))
 }
 
 // GetResponder handles the response to the Get request. The method always
@@ -1015,7 +1065,6 @@ func (client DeploymentsClient) GetSender(req *http.Request) (*http.Response, er
 func (client DeploymentsClient) GetResponder(resp *http.Response) (result DeploymentExtended, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -1089,8 +1138,7 @@ func (client DeploymentsClient) GetAtSubscriptionScopePreparer(ctx context.Conte
 // GetAtSubscriptionScopeSender sends the GetAtSubscriptionScope request. The method will close the
 // http.Response Body if it receives an error.
 func (client DeploymentsClient) GetAtSubscriptionScopeSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client, req,
-		azure.DoRetryWithRegistration(client.Client))
+	return client.Send(req, azure.DoRetryWithRegistration(client.Client))
 }
 
 // GetAtSubscriptionScopeResponder handles the response to the GetAtSubscriptionScope request. The method always
@@ -1098,7 +1146,6 @@ func (client DeploymentsClient) GetAtSubscriptionScopeSender(req *http.Request) 
 func (client DeploymentsClient) GetAtSubscriptionScopeResponder(resp *http.Response) (result DeploymentExtended, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -1140,6 +1187,9 @@ func (client DeploymentsClient) ListAtSubscriptionScope(ctx context.Context, fil
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ListAtSubscriptionScope", resp, "Failure responding to request")
 	}
+	if result.dlr.hasNextLink() && result.dlr.IsEmpty() {
+		err = result.NextWithContext(ctx)
+	}
 
 	return
 }
@@ -1172,8 +1222,7 @@ func (client DeploymentsClient) ListAtSubscriptionScopePreparer(ctx context.Cont
 // ListAtSubscriptionScopeSender sends the ListAtSubscriptionScope request. The method will close the
 // http.Response Body if it receives an error.
 func (client DeploymentsClient) ListAtSubscriptionScopeSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client, req,
-		azure.DoRetryWithRegistration(client.Client))
+	return client.Send(req, azure.DoRetryWithRegistration(client.Client))
 }
 
 // ListAtSubscriptionScopeResponder handles the response to the ListAtSubscriptionScope request. The method always
@@ -1181,7 +1230,6 @@ func (client DeploymentsClient) ListAtSubscriptionScopeSender(req *http.Request)
 func (client DeploymentsClient) ListAtSubscriptionScopeResponder(resp *http.Response) (result DeploymentListResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -1270,6 +1318,9 @@ func (client DeploymentsClient) ListByResourceGroup(ctx context.Context, resourc
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "resources.DeploymentsClient", "ListByResourceGroup", resp, "Failure responding to request")
 	}
+	if result.dlr.hasNextLink() && result.dlr.IsEmpty() {
+		err = result.NextWithContext(ctx)
+	}
 
 	return
 }
@@ -1303,8 +1354,7 @@ func (client DeploymentsClient) ListByResourceGroupPreparer(ctx context.Context,
 // ListByResourceGroupSender sends the ListByResourceGroup request. The method will close the
 // http.Response Body if it receives an error.
 func (client DeploymentsClient) ListByResourceGroupSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client, req,
-		azure.DoRetryWithRegistration(client.Client))
+	return client.Send(req, azure.DoRetryWithRegistration(client.Client))
 }
 
 // ListByResourceGroupResponder handles the response to the ListByResourceGroup request. The method always
@@ -1312,7 +1362,6 @@ func (client DeploymentsClient) ListByResourceGroupSender(req *http.Request) (*h
 func (client DeploymentsClient) ListByResourceGroupResponder(resp *http.Response) (result DeploymentListResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -1441,8 +1490,7 @@ func (client DeploymentsClient) ValidatePreparer(ctx context.Context, resourceGr
 // ValidateSender sends the Validate request. The method will close the
 // http.Response Body if it receives an error.
 func (client DeploymentsClient) ValidateSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client, req,
-		azure.DoRetryWithRegistration(client.Client))
+	return client.Send(req, azure.DoRetryWithRegistration(client.Client))
 }
 
 // ValidateResponder handles the response to the Validate request. The method always
@@ -1450,7 +1498,6 @@ func (client DeploymentsClient) ValidateSender(req *http.Request) (*http.Respons
 func (client DeploymentsClient) ValidateResponder(resp *http.Response) (result DeploymentValidateResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusBadRequest),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
@@ -1535,8 +1582,7 @@ func (client DeploymentsClient) ValidateAtSubscriptionScopePreparer(ctx context.
 // ValidateAtSubscriptionScopeSender sends the ValidateAtSubscriptionScope request. The method will close the
 // http.Response Body if it receives an error.
 func (client DeploymentsClient) ValidateAtSubscriptionScopeSender(req *http.Request) (*http.Response, error) {
-	return autorest.SendWithSender(client, req,
-		azure.DoRetryWithRegistration(client.Client))
+	return client.Send(req, azure.DoRetryWithRegistration(client.Client))
 }
 
 // ValidateAtSubscriptionScopeResponder handles the response to the ValidateAtSubscriptionScope request. The method always
@@ -1544,7 +1590,6 @@ func (client DeploymentsClient) ValidateAtSubscriptionScopeSender(req *http.Requ
 func (client DeploymentsClient) ValidateAtSubscriptionScopeResponder(resp *http.Response) (result DeploymentValidateResult, err error) {
 	err = autorest.Respond(
 		resp,
-		client.ByInspecting(),
 		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusBadRequest),
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())

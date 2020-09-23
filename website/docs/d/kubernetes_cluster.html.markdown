@@ -1,7 +1,7 @@
 ---
+subcategory: "Container"
 layout: "azurerm"
 page_title: "Azure Resource Manager: azurerm_kubernetes_cluster"
-sidebar_current: "docs-azurerm-data-source-kubernetes-cluster"
 description: |-
   Gets information about an existing Managed Kubernetes Cluster (AKS)
 ---
@@ -16,7 +16,7 @@ Use this data source to access information about an existing Managed Kubernetes 
 ## Example Usage
 
 ```hcl
-data "azurerm_kubernetes_cluster" "test" {
+data "azurerm_kubernetes_cluster" "example" {
   name                = "myakscluster"
   resource_group_name = "my-example-resource-group"
 }
@@ -26,9 +26,9 @@ data "azurerm_kubernetes_cluster" "test" {
 
 The following arguments are supported:
 
-* `name` - (Required) The name of the managed Kubernetes Cluster.
+* `name` - The name of the managed Kubernetes Cluster.
 
-* `resource_group_name` - (Required) The name of the Resource Group in which the managed Kubernetes Cluster exists.
+* `resource_group_name` - The name of the Resource Group in which the managed Kubernetes Cluster exists.
 
 ## Attributes Reference
 
@@ -36,13 +36,21 @@ The following attributes are exported:
 
 * `id` - The ID of the Kubernetes Managed Cluster.
 
+* `api_server_authorized_ip_ranges` - The IP ranges to whitelist for incoming traffic to the primaries.
+
+-> **NOTE:** `api_server_authorized_ip_ranges` Is currently in Preview on an opt-in basis. To use it, enable feature `APIServerSecurityPreview` for `namespace Microsoft.ContainerService`. For an example of how to enable a Preview feature, please visit [How to enable the Azure Firewall Public Preview](https://docs.microsoft.com/en-us/azure/firewall/public-preview)
+
 * `addon_profile` - A `addon_profile` block as documented below.
 
-* `agent_pool_profile` - One or more `agent_profile_pool` blocks as documented below.
+* `agent_pool_profile` - An `agent_pool_profile` block as documented below.
 
 * `dns_prefix` - The DNS Prefix of the managed Kubernetes cluster.
 
 * `fqdn` - The FQDN of the Azure Kubernetes Managed Cluster.
+
+* `private_fqdn` - The FQDN of this Kubernetes Cluster when private link has been enabled. This name is only resolvable inside the Virtual Network where the Azure Kubernetes Service is located                   
+
+-> **NOTE:**  At this time Private Link is in Public Preview.
 
 * `kube_admin_config` - A `kube_admin_config` block as defined below. This is only available when Role Based Access Control with Azure Active Directory is enabled.
 
@@ -54,9 +62,15 @@ The following attributes are exported:
 
 * `kubernetes_version` - The version of Kubernetes used on the managed Kubernetes Cluster.
 
+* `private_cluster_enabled` - If the cluster has the Kubernetes API only exposed on internal IP addresses.                           
+
 * `location` - The Azure Region in which the managed Kubernetes Cluster exists.
 
+* `disk_encryption_set_id` - The ID of the Disk Encryption Set used for the Nodes and Volumes.
+
 * `linux_profile` - A `linux_profile` block as documented below.
+
+* `windows_profile` - A `windows_profile` block as documented below.
 
 * `network_profile` - A `network_profile` block as documented below.
 
@@ -65,6 +79,10 @@ The following attributes are exported:
 * `role_based_access_control` - A `role_based_access_control` block as documented below.
 
 * `service_principal` - A `service_principal` block as documented below.
+
+* `identity` - A `identity` block as documented below.
+
+* `kubelet_identity` - A `kubelet_identity` block as documented below.
 
 * `tags` - A mapping of tags assigned to this resource.
 
@@ -76,19 +94,39 @@ A `addon_profile` block exports the following:
 
 * `oms_agent` - A `oms_agent` block.
 
+* `kube_dashboard` - A `kube_dashboard` block.
+
+* `azure_policy` - A `azure_policy` block.
+
 ---
 
 A `agent_pool_profile` block exports the following:
+
+* `type` - The type of the Agent Pool.
 
 * `count` - The number of Agents (VM's) in the Pool.
 
 * `max_pods` - The maximum number of pods that can run on each agent.
 
+* `availability_zones` - The availability zones used for the nodes.
+
+* `enable_auto_scaling` - If the auto-scaler is enabled.
+
+* `min_count` - Minimum number of nodes for auto-scaling
+
+* `max_count` - Maximum number of nodes for auto-scaling
+
 * `name` - The name assigned to this pool of agents.
+
+* `node_taints` - The list of Kubernetes taints which are applied to nodes in the agent pool
 
 * `os_disk_size_gb` - The size of the Agent VM's Operating System Disk in GB.
 
 * `os_type` - The Operating System used for the Agents.
+
+* `tags` - A mapping of tags to assign to the resource.
+
+* `orchestrator_version` - Kubernetes version used for the Agents.
 
 * `vm_size` - The size of each VM in the Agent Pool (e.g. `Standard_F1`).
 
@@ -98,7 +136,11 @@ A `agent_pool_profile` block exports the following:
 
 A `azure_active_directory` block exports the following:
 
+* `admin_group_object_ids` - The list of Object IDs of Azure Active Directory Groups which have Admin Role on the Cluster (when using a Managed integration).
+
 * `client_app_id` - The Client ID of an Azure Active Directory Application.
+
+* `managed` - Is the Azure Active Directory Integration managed (also known as AAD Integration V2)?
 
 * `server_app_id` - The Server ID of an Azure Active Directory Application.
 
@@ -132,6 +174,7 @@ The `kube_admin_config` and `kube_config` blocks exports the following:
 
 ```
 provider "kubernetes" {
+  load_config_file       = "false"
   host                   = "${data.azurerm_kubernetes_cluster.main.kube_config.0.host}"
   username               = "${data.azurerm_kubernetes_cluster.main.kube_config.0.username}"
   password               = "${data.azurerm_kubernetes_cluster.main.kube_config.0.password}"
@@ -147,7 +190,13 @@ A `linux_profile` block exports the following:
 
 * `admin_username` - The username associated with the administrator account of the managed Kubernetes Cluster.
 
-* `ssh_key` - One or more `ssh_key` blocks as defined below.
+* `ssh_key` - An `ssh_key` block as defined below.
+
+---
+
+A `windows_profile` block exports the following:
+
+* `admin_username` - The username associated with the administrator account of the Windows VMs.
 
 ---
 
@@ -158,6 +207,8 @@ A `network_profile` block exports the following:
 * `dns_service_ip` - IP address within the Kubernetes service address range used by cluster service discovery (kube-dns).
 
 * `network_plugin` - Network plugin used such as `azure` or `kubenet`.
+
+* `network_policy` - Network policy to be used with Azure CNI. Eg: `calico` or `azure`
 
 * `pod_cidr` - The CIDR used for pod IP addresses.
 
@@ -170,6 +221,30 @@ A `oms_agent` block exports the following:
 * `enabled` - Is the OMS Agent Enabled?
 
 * `log_analytics_workspace_id` - The ID of the Log Analytics Workspace which the OMS Agent should send data to.
+
+* `oms_agent_identity` - An `oms_agent_identity` block as defined below.  
+
+---
+
+The `oms_agent_identity` block exports the following:
+
+* `client_id` - The Client ID of the user-defined Managed Identity used by the OMS Agents.
+
+* `object_id` - The Object ID of the user-defined Managed Identity used by the OMS Agents.
+
+* `user_assigned_identity_id` - The ID of the User Assigned Identity used by the OMS Agents.
+
+---
+
+A `kube_dashboard` block supports the following:
+
+* `enabled` - Is the Kubernetes Dashboard enabled?
+
+---
+
+A `azure_policy` block supports the following:
+
+* `enabled` - Is Azure Policy for Kubernetes enabled?
 
 ---
 
@@ -187,6 +262,32 @@ A `service_principal` block supports the following:
 
 ---
 
+The `identity` block exports the following:
+
+* `type` - The type of identity used for the managed cluster.
+
+* `principal_id` - The principal id of the system assigned identity which is used by primary components.
+
+* `tenant_id` - The tenant id of the system assigned identity which is used by primary components.
+
+---
+
+The `kubelet_identity` block exports the following:
+
+* `client_id` - The Client ID of the user-defined Managed Identity assigned to the Kubelets.
+
+* `object_id` - The Object ID of the user-defined Managed Identity assigned to the Kubelets.
+
+* `user_assigned_identity_id` - The ID of the User Assigned Identity assigned to the Kubelets.
+
+---
+
 A `ssh_key` block exports the following:
 
 * `key_data` - The Public SSH Key used to access the cluster.
+
+## Timeouts
+
+The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) for certain actions:
+
+* `read` - (Defaults to 5 minutes) Used when retrieving the Managed Kubernetes Cluster (AKS).

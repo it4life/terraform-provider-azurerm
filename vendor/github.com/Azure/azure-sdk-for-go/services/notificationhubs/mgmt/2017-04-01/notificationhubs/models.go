@@ -31,55 +31,6 @@ import (
 // The package's fully qualified name.
 const fqdn = "github.com/Azure/azure-sdk-for-go/services/notificationhubs/mgmt/2017-04-01/notificationhubs"
 
-// AccessRights enumerates the values for access rights.
-type AccessRights string
-
-const (
-	// Listen ...
-	Listen AccessRights = "Listen"
-	// Manage ...
-	Manage AccessRights = "Manage"
-	// Send ...
-	Send AccessRights = "Send"
-)
-
-// PossibleAccessRightsValues returns an array of possible values for the AccessRights const type.
-func PossibleAccessRightsValues() []AccessRights {
-	return []AccessRights{Listen, Manage, Send}
-}
-
-// NamespaceType enumerates the values for namespace type.
-type NamespaceType string
-
-const (
-	// Messaging ...
-	Messaging NamespaceType = "Messaging"
-	// NotificationHub ...
-	NotificationHub NamespaceType = "NotificationHub"
-)
-
-// PossibleNamespaceTypeValues returns an array of possible values for the NamespaceType const type.
-func PossibleNamespaceTypeValues() []NamespaceType {
-	return []NamespaceType{Messaging, NotificationHub}
-}
-
-// SkuName enumerates the values for sku name.
-type SkuName string
-
-const (
-	// Basic ...
-	Basic SkuName = "Basic"
-	// Free ...
-	Free SkuName = "Free"
-	// Standard ...
-	Standard SkuName = "Standard"
-)
-
-// PossibleSkuNameValues returns an array of possible values for the SkuName const type.
-func PossibleSkuNameValues() []SkuName {
-	return []SkuName{Basic, Free, Standard}
-}
-
 // AdmCredential description of a NotificationHub AdmCredential.
 type AdmCredential struct {
 	// AdmCredentialProperties - Properties of NotificationHub AdmCredential.
@@ -168,23 +119,25 @@ func (ac *ApnsCredential) UnmarshalJSON(body []byte) error {
 	return nil
 }
 
-// ApnsCredentialProperties description of a NotificationHub ApnsCredential.
+// ApnsCredentialProperties description of a NotificationHub ApnsCredential. Note that there is no explicit
+// switch between Certificate and Token Authentication Modes. The mode is determined based on the properties
+// passed in.
 type ApnsCredentialProperties struct {
-	// ApnsCertificate - The APNS certificate.
+	// ApnsCertificate - The APNS certificate. Specify if using Certificate Authentication Mode.
 	ApnsCertificate *string `json:"apnsCertificate,omitempty"`
-	// CertificateKey - The certificate key.
+	// CertificateKey - The APNS certificate password if it exists.
 	CertificateKey *string `json:"certificateKey,omitempty"`
-	// Endpoint - The endpoint of this credential.
+	// Endpoint - The APNS endpoint of this credential. If using Certificate Authentication Mode and Sandbox specify 'gateway.sandbox.push.apple.com'. If using Certificate Authentication Mode and Production specify 'gateway.push.apple.com'. If using Token Authentication Mode and Sandbox specify 'https://api.development.push.apple.com:443/3/device'. If using Token Authentication Mode and Production specify 'https://api.push.apple.com:443/3/device'.
 	Endpoint *string `json:"endpoint,omitempty"`
-	// Thumbprint - The APNS certificate Thumbprint
+	// Thumbprint - The APNS certificate thumbprint. Specify if using Certificate Authentication Mode.
 	Thumbprint *string `json:"thumbprint,omitempty"`
-	// KeyID - A 10-character key identifier (kid) key, obtained from your developer account
+	// KeyID - A 10-character key identifier (kid) key, obtained from your developer account. Specify if using Token Authentication Mode.
 	KeyID *string `json:"keyId,omitempty"`
-	// AppName - The name of the application
+	// AppName - The name of the application or BundleId. Specify if using Token Authentication Mode.
 	AppName *string `json:"appName,omitempty"`
-	// AppID - The issuer (iss) registered claim key, whose value is your 10-character Team ID, obtained from your developer account
+	// AppID - The issuer (iss) registered claim key. The value is a 10-character TeamId, obtained from your developer account. Specify if using Token Authentication Mode.
 	AppID *string `json:"appId,omitempty"`
-	// Token - Provider Authentication Token, obtained through your developer account
+	// Token - Provider Authentication Token, obtained through your developer account. Specify if using Token Authentication Mode.
 	Token *string `json:"token,omitempty"`
 }
 
@@ -240,11 +193,11 @@ type BaiduCredentialProperties struct {
 // CheckAvailabilityParameters parameters supplied to the Check Name Availability for Namespace and
 // NotificationHubs.
 type CheckAvailabilityParameters struct {
-	// ID - Resource Id
+	// ID - READ-ONLY; Resource Id
 	ID *string `json:"id,omitempty"`
 	// Name - Resource name
 	Name *string `json:"name,omitempty"`
-	// Type - Resource type
+	// Type - READ-ONLY; Resource type
 	Type *string `json:"type,omitempty"`
 	// Location - Resource location
 	Location *string `json:"location,omitempty"`
@@ -259,14 +212,8 @@ type CheckAvailabilityParameters struct {
 // MarshalJSON is the custom marshaler for CheckAvailabilityParameters.
 func (capVar CheckAvailabilityParameters) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]interface{})
-	if capVar.ID != nil {
-		objectMap["id"] = capVar.ID
-	}
 	if capVar.Name != nil {
 		objectMap["name"] = capVar.Name
-	}
-	if capVar.Type != nil {
-		objectMap["type"] = capVar.Type
 	}
 	if capVar.Location != nil {
 		objectMap["location"] = capVar.Location
@@ -288,11 +235,11 @@ type CheckAvailabilityResult struct {
 	autorest.Response `json:"-"`
 	// IsAvailiable - True if the name is available and can be used to create new Namespace/NotificationHub. Otherwise false.
 	IsAvailiable *bool `json:"isAvailiable,omitempty"`
-	// ID - Resource Id
+	// ID - READ-ONLY; Resource Id
 	ID *string `json:"id,omitempty"`
-	// Name - Resource name
+	// Name - READ-ONLY; Resource name
 	Name *string `json:"name,omitempty"`
-	// Type - Resource type
+	// Type - READ-ONLY; Resource type
 	Type *string `json:"type,omitempty"`
 	// Location - Resource location
 	Location *string `json:"location,omitempty"`
@@ -307,15 +254,6 @@ func (car CheckAvailabilityResult) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]interface{})
 	if car.IsAvailiable != nil {
 		objectMap["isAvailiable"] = car.IsAvailiable
-	}
-	if car.ID != nil {
-		objectMap["id"] = car.ID
-	}
-	if car.Name != nil {
-		objectMap["name"] = car.Name
-	}
-	if car.Type != nil {
-		objectMap["type"] = car.Type
 	}
 	if car.Location != nil {
 		objectMap["location"] = car.Location
@@ -333,11 +271,11 @@ func (car CheckAvailabilityResult) MarshalJSON() ([]byte, error) {
 type CreateOrUpdateParameters struct {
 	// Properties - Properties of the NotificationHub.
 	*Properties `json:"properties,omitempty"`
-	// ID - Resource Id
+	// ID - READ-ONLY; Resource Id
 	ID *string `json:"id,omitempty"`
-	// Name - Resource name
+	// Name - READ-ONLY; Resource name
 	Name *string `json:"name,omitempty"`
-	// Type - Resource type
+	// Type - READ-ONLY; Resource type
 	Type *string `json:"type,omitempty"`
 	// Location - Resource location
 	Location *string `json:"location,omitempty"`
@@ -352,15 +290,6 @@ func (coup CreateOrUpdateParameters) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]interface{})
 	if coup.Properties != nil {
 		objectMap["properties"] = coup.Properties
-	}
-	if coup.ID != nil {
-		objectMap["id"] = coup.ID
-	}
-	if coup.Name != nil {
-		objectMap["name"] = coup.Name
-	}
-	if coup.Type != nil {
-		objectMap["type"] = coup.Type
 	}
 	if coup.Location != nil {
 		objectMap["location"] = coup.Location
@@ -457,11 +386,11 @@ type DebugSendResponse struct {
 	autorest.Response `json:"-"`
 	// DebugSendResult - Properties of the NotificationHub.
 	*DebugSendResult `json:"properties,omitempty"`
-	// ID - Resource Id
+	// ID - READ-ONLY; Resource Id
 	ID *string `json:"id,omitempty"`
-	// Name - Resource name
+	// Name - READ-ONLY; Resource name
 	Name *string `json:"name,omitempty"`
-	// Type - Resource type
+	// Type - READ-ONLY; Resource type
 	Type *string `json:"type,omitempty"`
 	// Location - Resource location
 	Location *string `json:"location,omitempty"`
@@ -476,15 +405,6 @@ func (dsr DebugSendResponse) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]interface{})
 	if dsr.DebugSendResult != nil {
 		objectMap["properties"] = dsr.DebugSendResult
-	}
-	if dsr.ID != nil {
-		objectMap["id"] = dsr.ID
-	}
-	if dsr.Name != nil {
-		objectMap["name"] = dsr.Name
-	}
-	if dsr.Type != nil {
-		objectMap["type"] = dsr.Type
 	}
 	if dsr.Location != nil {
 		objectMap["location"] = dsr.Location
@@ -586,8 +506,8 @@ type DebugSendResult struct {
 	Results interface{} `json:"results,omitempty"`
 }
 
-// ErrorResponse error response indicates NotificationHubs service is not able to process the incoming
-// request. The reason is provided in the error message.
+// ErrorResponse error response indicates NotificationHubs service is not able to process the incoming request.
+// The reason is provided in the error message.
 type ErrorResponse struct {
 	// Code - Error code.
 	Code *string `json:"code,omitempty"`
@@ -636,7 +556,7 @@ func (gc *GcmCredential) UnmarshalJSON(body []byte) error {
 
 // GcmCredentialProperties description of a NotificationHub GcmCredential.
 type GcmCredentialProperties struct {
-	// GcmEndpoint - The GCM endpoint.
+	// GcmEndpoint - The FCM legacy endpoint. Default value is 'https://fcm.googleapis.com/fcm/send'
 	GcmEndpoint *string `json:"gcmEndpoint,omitempty"`
 	// GoogleAPIKey - The Google API key.
 	GoogleAPIKey *string `json:"googleApiKey,omitempty"`
@@ -719,10 +639,15 @@ func (lr ListResult) IsEmpty() bool {
 	return lr.Value == nil || len(*lr.Value) == 0
 }
 
+// hasNextLink returns true if the NextLink is not empty.
+func (lr ListResult) hasNextLink() bool {
+	return lr.NextLink != nil && len(*lr.NextLink) != 0
+}
+
 // listResultPreparer prepares a request to retrieve the next set of results.
 // It returns nil if no more results exist.
 func (lr ListResult) listResultPreparer(ctx context.Context) (*http.Request, error) {
-	if lr.NextLink == nil || len(to.String(lr.NextLink)) < 1 {
+	if !lr.hasNextLink() {
 		return nil, nil
 	}
 	return autorest.Prepare((&http.Request{}).WithContext(ctx),
@@ -750,11 +675,16 @@ func (page *ListResultPage) NextWithContext(ctx context.Context) (err error) {
 			tracing.EndSpan(ctx, sc, err)
 		}()
 	}
-	next, err := page.fn(ctx, page.lr)
-	if err != nil {
-		return err
+	for {
+		next, err := page.fn(ctx, page.lr)
+		if err != nil {
+			return err
+		}
+		page.lr = next
+		if !next.hasNextLink() || !next.IsEmpty() {
+			break
+		}
 	}
-	page.lr = next
 	return nil
 }
 
@@ -841,11 +771,11 @@ type MpnsCredentialProperties struct {
 type NamespaceCreateOrUpdateParameters struct {
 	// NamespaceProperties - Properties of the Namespace.
 	*NamespaceProperties `json:"properties,omitempty"`
-	// ID - Resource Id
+	// ID - READ-ONLY; Resource Id
 	ID *string `json:"id,omitempty"`
-	// Name - Resource name
+	// Name - READ-ONLY; Resource name
 	Name *string `json:"name,omitempty"`
-	// Type - Resource type
+	// Type - READ-ONLY; Resource type
 	Type *string `json:"type,omitempty"`
 	// Location - Resource location
 	Location *string `json:"location,omitempty"`
@@ -860,15 +790,6 @@ func (ncoup NamespaceCreateOrUpdateParameters) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]interface{})
 	if ncoup.NamespaceProperties != nil {
 		objectMap["properties"] = ncoup.NamespaceProperties
-	}
-	if ncoup.ID != nil {
-		objectMap["id"] = ncoup.ID
-	}
-	if ncoup.Name != nil {
-		objectMap["name"] = ncoup.Name
-	}
-	if ncoup.Type != nil {
-		objectMap["type"] = ncoup.Type
 	}
 	if ncoup.Location != nil {
 		objectMap["location"] = ncoup.Location
@@ -1037,10 +958,15 @@ func (nlr NamespaceListResult) IsEmpty() bool {
 	return nlr.Value == nil || len(*nlr.Value) == 0
 }
 
+// hasNextLink returns true if the NextLink is not empty.
+func (nlr NamespaceListResult) hasNextLink() bool {
+	return nlr.NextLink != nil && len(*nlr.NextLink) != 0
+}
+
 // namespaceListResultPreparer prepares a request to retrieve the next set of results.
 // It returns nil if no more results exist.
 func (nlr NamespaceListResult) namespaceListResultPreparer(ctx context.Context) (*http.Request, error) {
-	if nlr.NextLink == nil || len(to.String(nlr.NextLink)) < 1 {
+	if !nlr.hasNextLink() {
 		return nil, nil
 	}
 	return autorest.Prepare((&http.Request{}).WithContext(ctx),
@@ -1068,11 +994,16 @@ func (page *NamespaceListResultPage) NextWithContext(ctx context.Context) (err e
 			tracing.EndSpan(ctx, sc, err)
 		}()
 	}
-	next, err := page.fn(ctx, page.nlr)
-	if err != nil {
-		return err
+	for {
+		next, err := page.fn(ctx, page.nlr)
+		if err != nil {
+			return err
+		}
+		page.nlr = next
+		if !next.hasNextLink() || !next.IsEmpty() {
+			break
+		}
 	}
-	page.nlr = next
 	return nil
 }
 
@@ -1132,9 +1063,9 @@ type NamespaceProperties struct {
 	Name *string `json:"name,omitempty"`
 	// ProvisioningState - Provisioning state of the Namespace.
 	ProvisioningState *string `json:"provisioningState,omitempty"`
-	// Region - Specifies the targeted region in which the namespace should be created. It can be any of the following values: Australia EastAustralia SoutheastCentral USEast USEast US 2West USNorth Central USSouth Central USEast AsiaSoutheast AsiaBrazil SouthJapan EastJapan WestNorth EuropeWest Europe
+	// Region - Specifies the targeted region in which the namespace should be created. It can be any of the following values: Australia East, Australia Southeast, Central US, East US, East US 2, West US, North Central US, South Central US, East Asia, Southeast Asia, Brazil South, Japan East, Japan West, North Europe, West Europe
 	Region *string `json:"region,omitempty"`
-	// MetricID - Identifier for Azure Insights metrics
+	// MetricID - READ-ONLY; Identifier for Azure Insights metrics
 	MetricID *string `json:"metricId,omitempty"`
 	// Status - Status of the namespace. It can be any of these values:1 = Created/Active2 = Creating3 = Suspended4 = Deleting
 	Status *string `json:"status,omitempty"`
@@ -1158,16 +1089,61 @@ type NamespaceProperties struct {
 	NamespaceType NamespaceType `json:"namespaceType,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for NamespaceProperties.
+func (np NamespaceProperties) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	if np.Name != nil {
+		objectMap["name"] = np.Name
+	}
+	if np.ProvisioningState != nil {
+		objectMap["provisioningState"] = np.ProvisioningState
+	}
+	if np.Region != nil {
+		objectMap["region"] = np.Region
+	}
+	if np.Status != nil {
+		objectMap["status"] = np.Status
+	}
+	if np.CreatedAt != nil {
+		objectMap["createdAt"] = np.CreatedAt
+	}
+	if np.UpdatedAt != nil {
+		objectMap["updatedAt"] = np.UpdatedAt
+	}
+	if np.ServiceBusEndpoint != nil {
+		objectMap["serviceBusEndpoint"] = np.ServiceBusEndpoint
+	}
+	if np.SubscriptionID != nil {
+		objectMap["subscriptionId"] = np.SubscriptionID
+	}
+	if np.ScaleUnit != nil {
+		objectMap["scaleUnit"] = np.ScaleUnit
+	}
+	if np.Enabled != nil {
+		objectMap["enabled"] = np.Enabled
+	}
+	if np.Critical != nil {
+		objectMap["critical"] = np.Critical
+	}
+	if np.DataCenter != nil {
+		objectMap["dataCenter"] = np.DataCenter
+	}
+	if np.NamespaceType != "" {
+		objectMap["namespaceType"] = np.NamespaceType
+	}
+	return json.Marshal(objectMap)
+}
+
 // NamespaceResource description of a Namespace resource.
 type NamespaceResource struct {
 	autorest.Response `json:"-"`
 	// NamespaceProperties - Properties of the Namespace.
 	*NamespaceProperties `json:"properties,omitempty"`
-	// ID - Resource Id
+	// ID - READ-ONLY; Resource Id
 	ID *string `json:"id,omitempty"`
-	// Name - Resource name
+	// Name - READ-ONLY; Resource name
 	Name *string `json:"name,omitempty"`
-	// Type - Resource type
+	// Type - READ-ONLY; Resource type
 	Type *string `json:"type,omitempty"`
 	// Location - Resource location
 	Location *string `json:"location,omitempty"`
@@ -1182,15 +1158,6 @@ func (nr NamespaceResource) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]interface{})
 	if nr.NamespaceProperties != nil {
 		objectMap["properties"] = nr.NamespaceProperties
-	}
-	if nr.ID != nil {
-		objectMap["id"] = nr.ID
-	}
-	if nr.Name != nil {
-		objectMap["name"] = nr.Name
-	}
-	if nr.Type != nil {
-		objectMap["type"] = nr.Type
 	}
 	if nr.Location != nil {
 		objectMap["location"] = nr.Location
@@ -1282,8 +1249,7 @@ func (nr *NamespaceResource) UnmarshalJSON(body []byte) error {
 	return nil
 }
 
-// NamespacesDeleteFuture an abstraction for monitoring and retrieving the results of a long-running
-// operation.
+// NamespacesDeleteFuture an abstraction for monitoring and retrieving the results of a long-running operation.
 type NamespacesDeleteFuture struct {
 	azure.Future
 }
@@ -1292,7 +1258,7 @@ type NamespacesDeleteFuture struct {
 // If the operation has not completed it will return an error.
 func (future *NamespacesDeleteFuture) Result(client NamespacesClient) (ar autorest.Response, err error) {
 	var done bool
-	done, err = future.Done(client)
+	done, err = future.DoneWithContext(context.Background(), client)
 	if err != nil {
 		err = autorest.NewErrorWithError(err, "notificationhubs.NamespacesDeleteFuture", "Result", future.Response(), "Polling failure")
 		return
@@ -1307,19 +1273,28 @@ func (future *NamespacesDeleteFuture) Result(client NamespacesClient) (ar autore
 
 // Operation a NotificationHubs REST API operation
 type Operation struct {
-	// Name - Operation name: {provider}/{resource}/{operation}
+	// Name - READ-ONLY; Operation name: {provider}/{resource}/{operation}
 	Name *string `json:"name,omitempty"`
 	// Display - The object that represents the operation.
 	Display *OperationDisplay `json:"display,omitempty"`
 }
 
+// MarshalJSON is the custom marshaler for Operation.
+func (o Operation) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	if o.Display != nil {
+		objectMap["display"] = o.Display
+	}
+	return json.Marshal(objectMap)
+}
+
 // OperationDisplay the object that represents the operation.
 type OperationDisplay struct {
-	// Provider - Service provider: Microsoft.NotificationHubs
+	// Provider - READ-ONLY; Service provider: Microsoft.NotificationHubs
 	Provider *string `json:"provider,omitempty"`
-	// Resource - Resource on which the operation is performed: Invoice, etc.
+	// Resource - READ-ONLY; Resource on which the operation is performed: Invoice, etc.
 	Resource *string `json:"resource,omitempty"`
-	// Operation - Operation type: Read, write, delete, etc.
+	// Operation - READ-ONLY; Operation type: Read, write, delete, etc.
 	Operation *string `json:"operation,omitempty"`
 }
 
@@ -1327,9 +1302,9 @@ type OperationDisplay struct {
 // operations and a URL link to get the next set of results.
 type OperationListResult struct {
 	autorest.Response `json:"-"`
-	// Value - List of NotificationHubs operations supported by the Microsoft.NotificationHubs resource provider.
+	// Value - READ-ONLY; List of NotificationHubs operations supported by the Microsoft.NotificationHubs resource provider.
 	Value *[]Operation `json:"value,omitempty"`
-	// NextLink - URL to get the next set of operation list results if there are any.
+	// NextLink - READ-ONLY; URL to get the next set of operation list results if there are any.
 	NextLink *string `json:"nextLink,omitempty"`
 }
 
@@ -1401,10 +1376,15 @@ func (olr OperationListResult) IsEmpty() bool {
 	return olr.Value == nil || len(*olr.Value) == 0
 }
 
+// hasNextLink returns true if the NextLink is not empty.
+func (olr OperationListResult) hasNextLink() bool {
+	return olr.NextLink != nil && len(*olr.NextLink) != 0
+}
+
 // operationListResultPreparer prepares a request to retrieve the next set of results.
 // It returns nil if no more results exist.
 func (olr OperationListResult) operationListResultPreparer(ctx context.Context) (*http.Request, error) {
-	if olr.NextLink == nil || len(to.String(olr.NextLink)) < 1 {
+	if !olr.hasNextLink() {
 		return nil, nil
 	}
 	return autorest.Prepare((&http.Request{}).WithContext(ctx),
@@ -1432,11 +1412,16 @@ func (page *OperationListResultPage) NextWithContext(ctx context.Context) (err e
 			tracing.EndSpan(ctx, sc, err)
 		}()
 	}
-	next, err := page.fn(ctx, page.olr)
-	if err != nil {
-		return err
+	for {
+		next, err := page.fn(ctx, page.olr)
+		if err != nil {
+			return err
+		}
+		page.olr = next
+		if !next.hasNextLink() || !next.IsEmpty() {
+			break
+		}
 	}
-	page.olr = next
 	return nil
 }
 
@@ -1474,11 +1459,11 @@ func NewOperationListResultPage(getNextPage func(context.Context, OperationListR
 type PatchParameters struct {
 	// Properties - Properties of the NotificationHub.
 	*Properties `json:"properties,omitempty"`
-	// ID - Resource Id
+	// ID - READ-ONLY; Resource Id
 	ID *string `json:"id,omitempty"`
-	// Name - Resource name
+	// Name - READ-ONLY; Resource name
 	Name *string `json:"name,omitempty"`
-	// Type - Resource type
+	// Type - READ-ONLY; Resource type
 	Type *string `json:"type,omitempty"`
 	// Location - Resource location
 	Location *string `json:"location,omitempty"`
@@ -1493,15 +1478,6 @@ func (pp PatchParameters) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]interface{})
 	if pp.Properties != nil {
 		objectMap["properties"] = pp.Properties
-	}
-	if pp.ID != nil {
-		objectMap["id"] = pp.ID
-	}
-	if pp.Name != nil {
-		objectMap["name"] = pp.Name
-	}
-	if pp.Type != nil {
-		objectMap["type"] = pp.Type
 	}
 	if pp.Location != nil {
 		objectMap["location"] = pp.Location
@@ -1614,11 +1590,11 @@ type PnsCredentialsResource struct {
 	autorest.Response `json:"-"`
 	// PnsCredentialsProperties - NotificationHub PNS Credentials.
 	*PnsCredentialsProperties `json:"properties,omitempty"`
-	// ID - Resource Id
+	// ID - READ-ONLY; Resource Id
 	ID *string `json:"id,omitempty"`
-	// Name - Resource name
+	// Name - READ-ONLY; Resource name
 	Name *string `json:"name,omitempty"`
-	// Type - Resource type
+	// Type - READ-ONLY; Resource type
 	Type *string `json:"type,omitempty"`
 	// Location - Resource location
 	Location *string `json:"location,omitempty"`
@@ -1633,15 +1609,6 @@ func (pcr PnsCredentialsResource) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]interface{})
 	if pcr.PnsCredentialsProperties != nil {
 		objectMap["properties"] = pcr.PnsCredentialsProperties
-	}
-	if pcr.ID != nil {
-		objectMap["id"] = pcr.ID
-	}
-	if pcr.Name != nil {
-		objectMap["name"] = pcr.Name
-	}
-	if pcr.Type != nil {
-		objectMap["type"] = pcr.Type
 	}
 	if pcr.Location != nil {
 		objectMap["location"] = pcr.Location
@@ -1763,11 +1730,11 @@ type Properties struct {
 
 // Resource ...
 type Resource struct {
-	// ID - Resource Id
+	// ID - READ-ONLY; Resource Id
 	ID *string `json:"id,omitempty"`
-	// Name - Resource name
+	// Name - READ-ONLY; Resource name
 	Name *string `json:"name,omitempty"`
-	// Type - Resource type
+	// Type - READ-ONLY; Resource type
 	Type *string `json:"type,omitempty"`
 	// Location - Resource location
 	Location *string `json:"location,omitempty"`
@@ -1780,15 +1747,6 @@ type Resource struct {
 // MarshalJSON is the custom marshaler for Resource.
 func (r Resource) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]interface{})
-	if r.ID != nil {
-		objectMap["id"] = r.ID
-	}
-	if r.Name != nil {
-		objectMap["name"] = r.Name
-	}
-	if r.Type != nil {
-		objectMap["type"] = r.Type
-	}
 	if r.Location != nil {
 		objectMap["location"] = r.Location
 	}
@@ -1821,11 +1779,11 @@ type ResourceType struct {
 	autorest.Response `json:"-"`
 	// Properties - Properties of the NotificationHub.
 	*Properties `json:"properties,omitempty"`
-	// ID - Resource Id
+	// ID - READ-ONLY; Resource Id
 	ID *string `json:"id,omitempty"`
-	// Name - Resource name
+	// Name - READ-ONLY; Resource name
 	Name *string `json:"name,omitempty"`
-	// Type - Resource type
+	// Type - READ-ONLY; Resource type
 	Type *string `json:"type,omitempty"`
 	// Location - Resource location
 	Location *string `json:"location,omitempty"`
@@ -1840,15 +1798,6 @@ func (rt ResourceType) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]interface{})
 	if rt.Properties != nil {
 		objectMap["properties"] = rt.Properties
-	}
-	if rt.ID != nil {
-		objectMap["id"] = rt.ID
-	}
-	if rt.Name != nil {
-		objectMap["name"] = rt.Name
-	}
-	if rt.Type != nil {
-		objectMap["type"] = rt.Type
 	}
 	if rt.Location != nil {
 		objectMap["location"] = rt.Location
@@ -1940,8 +1889,8 @@ func (rt *ResourceType) UnmarshalJSON(body []byte) error {
 	return nil
 }
 
-// SharedAccessAuthorizationRuleCreateOrUpdateParameters parameters supplied to the CreateOrUpdate
-// Namespace AuthorizationRules.
+// SharedAccessAuthorizationRuleCreateOrUpdateParameters parameters supplied to the CreateOrUpdate Namespace
+// AuthorizationRules.
 type SharedAccessAuthorizationRuleCreateOrUpdateParameters struct {
 	// Properties - Properties of the Namespace AuthorizationRules.
 	Properties *SharedAccessAuthorizationRuleProperties `json:"properties,omitempty"`
@@ -2025,10 +1974,15 @@ func (saarlr SharedAccessAuthorizationRuleListResult) IsEmpty() bool {
 	return saarlr.Value == nil || len(*saarlr.Value) == 0
 }
 
+// hasNextLink returns true if the NextLink is not empty.
+func (saarlr SharedAccessAuthorizationRuleListResult) hasNextLink() bool {
+	return saarlr.NextLink != nil && len(*saarlr.NextLink) != 0
+}
+
 // sharedAccessAuthorizationRuleListResultPreparer prepares a request to retrieve the next set of results.
 // It returns nil if no more results exist.
 func (saarlr SharedAccessAuthorizationRuleListResult) sharedAccessAuthorizationRuleListResultPreparer(ctx context.Context) (*http.Request, error) {
-	if saarlr.NextLink == nil || len(to.String(saarlr.NextLink)) < 1 {
+	if !saarlr.hasNextLink() {
 		return nil, nil
 	}
 	return autorest.Prepare((&http.Request{}).WithContext(ctx),
@@ -2037,8 +1991,7 @@ func (saarlr SharedAccessAuthorizationRuleListResult) sharedAccessAuthorizationR
 		autorest.WithBaseURL(to.String(saarlr.NextLink)))
 }
 
-// SharedAccessAuthorizationRuleListResultPage contains a page of SharedAccessAuthorizationRuleResource
-// values.
+// SharedAccessAuthorizationRuleListResultPage contains a page of SharedAccessAuthorizationRuleResource values.
 type SharedAccessAuthorizationRuleListResultPage struct {
 	fn     func(context.Context, SharedAccessAuthorizationRuleListResult) (SharedAccessAuthorizationRuleListResult, error)
 	saarlr SharedAccessAuthorizationRuleListResult
@@ -2057,11 +2010,16 @@ func (page *SharedAccessAuthorizationRuleListResultPage) NextWithContext(ctx con
 			tracing.EndSpan(ctx, sc, err)
 		}()
 	}
-	next, err := page.fn(ctx, page.saarlr)
-	if err != nil {
-		return err
+	for {
+		next, err := page.fn(ctx, page.saarlr)
+		if err != nil {
+			return err
+		}
+		page.saarlr = next
+		if !next.hasNextLink() || !next.IsEmpty() {
+			break
+		}
 	}
-	page.saarlr = next
 	return nil
 }
 
@@ -2099,22 +2057,31 @@ func NewSharedAccessAuthorizationRuleListResultPage(getNextPage func(context.Con
 type SharedAccessAuthorizationRuleProperties struct {
 	// Rights - The rights associated with the rule.
 	Rights *[]AccessRights `json:"rights,omitempty"`
-	// PrimaryKey - A base64-encoded 256-bit primary key for signing and validating the SAS token.
+	// PrimaryKey - READ-ONLY; A base64-encoded 256-bit primary key for signing and validating the SAS token.
 	PrimaryKey *string `json:"primaryKey,omitempty"`
-	// SecondaryKey - A base64-encoded 256-bit primary key for signing and validating the SAS token.
+	// SecondaryKey - READ-ONLY; A base64-encoded 256-bit primary key for signing and validating the SAS token.
 	SecondaryKey *string `json:"secondaryKey,omitempty"`
-	// KeyName - A string that describes the authorization rule.
+	// KeyName - READ-ONLY; A string that describes the authorization rule.
 	KeyName *string `json:"keyName,omitempty"`
-	// ClaimType - A string that describes the claim type
+	// ClaimType - READ-ONLY; A string that describes the claim type
 	ClaimType *string `json:"claimType,omitempty"`
-	// ClaimValue - A string that describes the claim value
+	// ClaimValue - READ-ONLY; A string that describes the claim value
 	ClaimValue *string `json:"claimValue,omitempty"`
-	// ModifiedTime - The last modified time for this rule
+	// ModifiedTime - READ-ONLY; The last modified time for this rule
 	ModifiedTime *string `json:"modifiedTime,omitempty"`
-	// CreatedTime - The created time for this rule
+	// CreatedTime - READ-ONLY; The created time for this rule
 	CreatedTime *string `json:"createdTime,omitempty"`
-	// Revision - The revision number for the rule
+	// Revision - READ-ONLY; The revision number for the rule
 	Revision *int32 `json:"revision,omitempty"`
+}
+
+// MarshalJSON is the custom marshaler for SharedAccessAuthorizationRuleProperties.
+func (saarp SharedAccessAuthorizationRuleProperties) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	if saarp.Rights != nil {
+		objectMap["rights"] = saarp.Rights
+	}
+	return json.Marshal(objectMap)
 }
 
 // SharedAccessAuthorizationRuleResource description of a Namespace AuthorizationRules.
@@ -2122,11 +2089,11 @@ type SharedAccessAuthorizationRuleResource struct {
 	autorest.Response `json:"-"`
 	// SharedAccessAuthorizationRuleProperties - Properties of the Namespace AuthorizationRule.
 	*SharedAccessAuthorizationRuleProperties `json:"properties,omitempty"`
-	// ID - Resource Id
+	// ID - READ-ONLY; Resource Id
 	ID *string `json:"id,omitempty"`
-	// Name - Resource name
+	// Name - READ-ONLY; Resource name
 	Name *string `json:"name,omitempty"`
-	// Type - Resource type
+	// Type - READ-ONLY; Resource type
 	Type *string `json:"type,omitempty"`
 	// Location - Resource location
 	Location *string `json:"location,omitempty"`
@@ -2141,15 +2108,6 @@ func (saarr SharedAccessAuthorizationRuleResource) MarshalJSON() ([]byte, error)
 	objectMap := make(map[string]interface{})
 	if saarr.SharedAccessAuthorizationRuleProperties != nil {
 		objectMap["properties"] = saarr.SharedAccessAuthorizationRuleProperties
-	}
-	if saarr.ID != nil {
-		objectMap["id"] = saarr.ID
-	}
-	if saarr.Name != nil {
-		objectMap["name"] = saarr.Name
-	}
-	if saarr.Type != nil {
-		objectMap["type"] = saarr.Type
 	}
 	if saarr.Location != nil {
 		objectMap["location"] = saarr.Location
